@@ -1,78 +1,147 @@
+// app.js
 const express = require("express");
-const axios = require("axios");
-const redis = require("redis");
-
+const mongoose = require("mongoose");
 const app = express();
 
-const redisHost = "127.0.0.1";
-const redisPort = 6379;
-
-const client = redis.createClient({
-  host: redisHost,
-  port: redisPort,
+// Connect to MongoDB with the database name 'jsonPlaceHolderImpl'
+mongoose.connect("mongodb://localhost:27017/jsonPlaceHolderImpl", {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
 });
 
-// Check if Redis is reachable
-client.ping((err, reply) => {
-  if (err) {
-    console.error("Error connecting to Redis:", err);
-  } else {
-    console.log("Connected to Redis. Server reply:", reply);
-  }
+// Define Mongoose schema for comments
+const commentSchema = new mongoose.Schema({
+  body: String,
+  email: String,
+  id: Number,
+  name: String,
+  postId: Number,
 });
 
-const baseURL = "https://jsonplaceholder.typicode.com";
-const CACHE_EXPIRATION = 60; // Cache expiration time in seconds
+// Define Mongoose schema for posts
+const postSchema = new mongoose.Schema({
+  body: String,
+  id: Number,
+  title: String,
+  userId: Number,
+  comments: [commentSchema], // Array of comments
+});
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+// Define Mongoose schema for users
+const userSchema = new mongoose.Schema({
+  address: {
+    city: String,
+    geo: {
+      lat: String,
+      lng: String,
+    },
+    street: String,
+    suite: String,
+    zipcode: String,
+  },
+  company: {
+    bs: String,
+    catchPhrase: String,
+    name: String,
+  },
+  email: String,
+  id: Number,
+  name: String,
+  phone: String,
+  username: String,
+  website: String,
+});
+
+const User = mongoose.model("User", userSchema);
+const Post = mongoose.model("Post", postSchema);
+
+// static page
 app.use(express.static("static"));
 
-// Middleware to check cache
-app.use(async (req, res, next) => {
-  const key = req.originalUrl;
+// Middleware to handle common logic for posts and users routes
+app.use((req, res, next) => {
+  // Extract parameters from the query string
+  const { limit, skip, userId } = req.query;
 
-  // Check if the data is in the cache
-  client.get(key, async (err, data) => {
-    if (err) throw err;
+  // Prepare options for limiting and skipping
+  const options = {};
+  if (limit) options.limit = parseInt(limit);
+  if (skip) options.skip = parseInt(skip);
 
-    if (data !== null) {
-      // Data found in cache, send it with a custom header
-      res.set("X-Response-Source", "Cache");
-      res.send(JSON.parse(data));
-    } else {
-      // Data not found in cache, proceed with the request
-      next();
-    }
-  });
+  // Apply userId filter if provided
+  const filter = userId ? { userId: parseInt(userId) } : {};
+
+  req.routeOptions = { options, filter };
+  next();
 });
 
-// Route to handle the request
-app.use(async (req, res) => {
-  const url = `${baseURL}${req.url}`;
-
+// Route to get posts with comments
+app.get("/posts", async (req, res) => {
   try {
-    // Fetch data from the external API
-    const response = await axios.get(url);
-
-    // Store the response in the cache
-    client.setex(
-      req.originalUrl,
-      CACHE_EXPIRATION,
-      JSON.stringify(response.data)
-    );
-
-    // Send the response to the client with a custom header
-    res.set("X-Response-Source", "Server");
-    res.send(response.data);
+    const posts = await Post.find(
+      req.routeOptions.filter,
+      null,
+      req.routeOptions.options
+    ).populate("comments");
+    res.json(posts);
   } catch (error) {
-    // Handle errors, you may want to send an error response to the client
     console.error(error);
     res.status(500).send("Internal Server Error");
   }
 });
 
-const PORT = process.env.PORT || 3000;
+// Route to get a specific post by ID
+app.get("/posts/:postId", async (req, res) => {
+  const { postId } = req.params;
+
+  try {
+    const post = await Post.findById(postId).populate("comments");
+    if (!post) {
+      res.status(404).json({ error: "Post not found" });
+      return;
+    }
+
+    res.json(post);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+// Route to get users
+app.get("/users", async (req, res) => {
+  try {
+    const users = await User.find(
+      req.routeOptions.filter,
+      null,
+      req.routeOptions.options
+    );
+    res.json(users);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+// Route to get a specific user by ID
+app.get("/users/:userId", async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

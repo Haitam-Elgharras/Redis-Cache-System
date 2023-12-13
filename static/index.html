@@ -9,24 +9,25 @@
     <h1>Proxy HTTP</h1>
 
     <button onclick="getReq('users', 5)">Get Users</button>
-    <button onclick="getReq('comments', 5)">Get Comments</button>
     <button onclick="getReq('posts', 5)">Get Posts</button>
 
     <!-- Add new buttons for retrieving with limit and skip -->
     <button onclick="getReqWithParams('users', 10, 0)">
       Get Users (Limit: 10, Skip: 0)
     </button>
-    <button onclick="getReqWithParams('comments', 10, 0)">
-      Get Comments (Limit: 10, Skip: 0)
-    </button>
+
     <button onclick="getReqWithParams('posts', 10, 0)">
       Get Posts (Limit: 10, Skip: 0)
     </button>
 
     <!-- Add new buttons for retrieving by ID -->
-    <button onclick="getReqById('users', 1)">Get User by ID</button>
-    <button onclick="getReqById('comments', 1)">Get Comment by ID</button>
-    <button onclick="getReqById('posts', 1)">Get Post by ID</button>
+    <button onclick="getReqById('users', '65798bc279074e0ef8afea85')">
+      Get User by ID
+    </button>
+
+    <button onclick="getReqById('posts', '65798bc279074e0ef8afea90')">
+      Get Post by ID
+    </button>
 
     <script>
       async function getReq(endpoint, num) {
@@ -34,7 +35,7 @@
           let start, end;
 
           start = Date.now();
-          return fetch(`http://localhost:3000/${endpoint}`)
+          return fetch(`/${endpoint}`)
             .then(async (response) => {
               end = Date.now();
               const data = await response.json();
@@ -58,7 +59,7 @@
         let start, end;
 
         start = Date.now();
-        fetch(`http://localhost:3000/${endpoint}?limit=${limit}&skip=${skip}`)
+        fetch(`/${endpoint}?limit=${limit}&skip=${skip}`)
           .then(async (response) => {
             end = Date.now();
             const data = await response.json();
@@ -79,7 +80,7 @@
         let start, end;
 
         start = Date.now();
-        fetch(`http://localhost:3000/${endpoint}/${id}`)
+        fetch(`/${endpoint}/${id}`)
           .then(async (response) => {
             end = Date.now();
             const data = await response.json();
