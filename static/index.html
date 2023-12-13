@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <h1>Proxy HTTP</h1>
+
+    <button onclick="getReq('users', 5)">Get Users</button>
+    <button onclick="getReq('comments', 5)">Get Comments</button>
+    <button onclick="getReq('posts', 5)">Get Posts</button>
+
+    <!-- Add new buttons for retrieving with limit and skip -->
+    <button onclick="getReqWithParams('users', 10, 0)">
+      Get Users (Limit: 10, Skip: 0)
+    </button>
+    <button onclick="getReqWithParams('comments', 10, 0)">
+      Get Comments (Limit: 10, Skip: 0)
+    </button>
+    <button onclick="getReqWithParams('posts', 10, 0)">
+      Get Posts (Limit: 10, Skip: 0)
+    </button>
+
+    <!-- Add new buttons for retrieving by ID -->
+    <button onclick="getReqById('users', 1)">Get User by ID</button>
+    <button onclick="getReqById('comments', 1)">Get Comment by ID</button>
+    <button onclick="getReqById('posts', 1)">Get Post by ID</button>
+
+    <script>
+      async function getReq(endpoint, num) {
+        const promises = new Array(num).fill(0).map((_, i) => {
+          let start, end;
+
+          start = Date.now();
+          return fetch(`http://localhost:3000/${endpoint}`)
+            .then(async (response) => {
+              end = Date.now();
+              const data = await response.json();
+              const source = response.headers.get("X-Response-Source");
+
+              console.log(`Request ${i + 1}`);
+              console.log(`Endpoint: ${endpoint}`);
+              console.log(`Response source: ${source}`);
+              console.log(`Time taken: ${end - start} ms`);
+              console.log(`Data:`, data);
+            })
+            .catch((error) => {
+              console.error(`Request ${i + 1} failed:`, error);
+            });
+        });
+
+        await Promise.all(promises);
+      }
+
+      async function getReqWithParams(endpoint, limit, skip) {
+        let start, end;
+
+        start = Date.now();
+        fetch(`http://localhost:3000/${endpoint}?limit=${limit}&skip=${skip}`)
+          .then(async (response) => {
+            end = Date.now();
+            const data = await response.json();
+            const source = response.headers.get("X-Response-Source");
+
+            console.log(`Request with parameters`);
+            console.log(`Endpoint: ${endpoint}`);
+            console.log(`Response source: ${source}`);
+            console.log(`Time taken: ${end - start} ms`);
+            console.log(`Data:`, data);
+          })
+          .catch((error) => {
+            console.error(`Request with parameters failed:`, error);
+          });
+      }
+
+      async function getReqById(endpoint, id) {
+        let start, end;
+
+        start = Date.now();
+        fetch(`http://localhost:3000/${endpoint}/${id}`)
+          .then(async (response) => {
+            end = Date.now();
+            const data = await response.json();
+            const source = response.headers.get("X-Response-Source");
+
+            console.log(`Request by ID`);
+            console.log(`Endpoint: ${endpoint}`);
+            console.log(`Response source: ${source}`);
+            console.log(`Time taken: ${end - start} ms`);
+            console.log(`Data:`, data);
+          })
+          .catch((error) => {
+            console.error(`Request by ID failed:`, error);
+          });
+      }
+    </script>
+  </body>
+</html>
