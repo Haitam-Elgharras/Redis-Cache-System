@@ -4,37 +4,115 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+      }
+
+      h1 {
+        color: #333;
+      }
+
+      button {
+        margin: 10px;
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: #4caf50;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+      }
+
+      button:hover {
+        background-color: #45a049;
+      }
+
+      button:active {
+        background-color: #3e8e41;
+      }
+    </style>
   </head>
   <body>
     <h1>Proxy HTTP</h1>
 
-    <button onclick="getReq('users', 5)">Get Users</button>
-    <button onclick="getReq('comments', 5)">Get Comments</button>
-    <button onclick="getReq('posts', 5)">Get Posts</button>
+    <button
+      onclick="getReq('users', 5)"
+      onmouseover="hoverButton(this)"
+      onmouseout="unhoverButton(this)"
+    >
+      Get Users
+    </button>
+    <button
+      onclick="getReq('comments', 5)"
+      onmouseover="hoverButton(this)"
+      onmouseout="unhoverButton(this)"
+    >
+      Get Comments
+    </button>
+    <button
+      onclick="getReq('posts', 5)"
+      onmouseover="hoverButton(this)"
+      onmouseout="unhoverButton(this)"
+    >
+      Get Posts
+    </button>
 
     <!-- Add new buttons for retrieving with limit and skip -->
-    <button onclick="getReqWithParams('users', 10, 0)">
+    <button
+      onclick="getReqWithParams('users', 10, 0)"
+      onmouseover="hoverButton(this)"
+      onmouseout="unhoverButton(this)"
+    >
       Get Users (Limit: 10, Skip: 0)
     </button>
-    <button onclick="getReqWithParams('comments', 10, 0)">
+    <button
+      onclick="getReqWithParams('comments', 10, 0)"
+      onmouseover="hoverButton(this)"
+      onmouseout="unhoverButton(this)"
+    >
       Get Comments (Limit: 10, Skip: 0)
     </button>
-    <button onclick="getReqWithParams('posts', 10, 0)">
+    <button
+      onclick="getReqWithParams('posts', 10, 0)"
+      onmouseover="hoverButton(this)"
+      onmouseout="unhoverButton(this)"
+    >
       Get Posts (Limit: 10, Skip: 0)
     </button>
 
     <!-- Add new buttons for retrieving by ID -->
-    <button onclick="getReqById('users', 1)">Get User by ID</button>
-    <button onclick="getReqById('comments', 1)">Get Comment by ID</button>
-    <button onclick="getReqById('posts', 1)">Get Post by ID</button>
-
+    <button
+      onclick="getReqById('users', 1)"
+      onmouseover="hoverButton(this)"
+      onmouseout="unhoverButton(this)"
+    >
+      Get User by ID
+    </button>
+    <button
+      onclick="getReqById('posts', 1)"
+      onmouseover="hoverButton(this)"
+      onmouseout="unhoverButton(this)"
+    >
+      Get Post by ID
+    </button>
     <script>
+      function hoverButton(button) {
+        button.style.backgroundColor = "#45a049";
+      }
+
+      function unhoverButton(button) {
+        button.style.backgroundColor = "#4caf50";
+      }
+
       async function getReq(endpoint, num) {
         const promises = new Array(num).fill(0).map((_, i) => {
           let start, end;
 
           start = Date.now();
-          return fetch(`http://localhost:3000/${endpoint}`)
+          return fetch(`/${endpoint}`)
             .then(async (response) => {
               end = Date.now();
               const data = await response.json();
@@ -58,7 +136,7 @@
         let start, end;
 
         start = Date.now();
-        fetch(`http://localhost:3000/${endpoint}?limit=${limit}&skip=${skip}`)
+        fetch(`/${endpoint}?limit=${limit}&skip=${skip}`)
           .then(async (response) => {
             end = Date.now();
             const data = await response.json();
@@ -79,7 +157,7 @@
         let start, end;
 
         start = Date.now();
-        fetch(`http://localhost:3000/${endpoint}/${id}`)
+        fetch(`/${endpoint}/${id}`)
           .then(async (response) => {
             end = Date.now();
             const data = await response.json();
