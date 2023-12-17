@@ -33,72 +33,161 @@
       button:active {
         background-color: #3e8e41;
       }
+
+      textarea {
+        width: 60%;
+        height: 300px;
+        margin: 20px;
+        padding: 10px;
+        font-family: monospace;
+        resize: none;
+      }
+
+      textarea:focus {
+        outline: none;
+        border: 1px solid #4caf50;
+      }
+
+      .customUrl {
+        margin-top: 20px;
+        padding: 10px;
+        display: flex;
+        justify-content: center;
+        gap: 45px;
+      }
+      #customUrl {
+        width: 40%;
+        height: 30px;
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      #customUrl:focus {
+        outline: none;
+        border: 1px solid #4caf50;
+      }
+
+      #customUrlButton {
+        width: fit-content;
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: #4caf50;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+      }
     </style>
   </head>
   <body>
     <h1>Proxy HTTP</h1>
 
-    <button
-      onclick="getReq('users', 5)"
-      onmouseover="hoverButton(this)"
-      onmouseout="unhoverButton(this)"
-    >
-      Get Users
-    </button>
-    <button
-      onclick="getReq('comments', 5)"
-      onmouseover="hoverButton(this)"
-      onmouseout="unhoverButton(this)"
-    >
-      Get Comments
-    </button>
-    <button
-      onclick="getReq('posts', 5)"
-      onmouseover="hoverButton(this)"
-      onmouseout="unhoverButton(this)"
-    >
-      Get Posts
-    </button>
+    <div>
+      <button
+        onclick="getReq('users', 5)"
+        onmouseover="hoverButton(this)"
+        onmouseout="unhoverButton(this)"
+      >
+        Get Users
+      </button>
+      <button
+        onclick="getReq('comments', 5)"
+        onmouseover="hoverButton(this)"
+        onmouseout="unhoverButton(this)"
+      >
+        Get Comments
+      </button>
+      <button
+        onclick="getReq('posts', 5)"
+        onmouseover="hoverButton(this)"
+        onmouseout="unhoverButton(this)"
+      >
+        Get Posts
+      </button>
 
-    <!-- Add new buttons for retrieving with limit and skip -->
-    <button
-      onclick="getReqWithParams('users', 10, 0)"
-      onmouseover="hoverButton(this)"
-      onmouseout="unhoverButton(this)"
-    >
-      Get Users (Limit: 10, Skip: 0)
-    </button>
-    <button
-      onclick="getReqWithParams('comments', 10, 0)"
-      onmouseover="hoverButton(this)"
-      onmouseout="unhoverButton(this)"
-    >
-      Get Comments (Limit: 10, Skip: 0)
-    </button>
-    <button
-      onclick="getReqWithParams('posts', 10, 0)"
-      onmouseover="hoverButton(this)"
-      onmouseout="unhoverButton(this)"
-    >
-      Get Posts (Limit: 10, Skip: 0)
-    </button>
+      <!-- Add new buttons for retrieving with limit and skip -->
+      <button
+        onclick="getReqWithParams('users', 10, 0)"
+        onmouseover="hoverButton(this)"
+        onmouseout="unhoverButton(this)"
+      >
+        Get Users (Limit: 10, Skip: 0)
+      </button>
+      <button
+        onclick="getReqWithParams('comments', 10, 0)"
+        onmouseover="hoverButton(this)"
+        onmouseout="unhoverButton(this)"
+      >
+        Get Comments (Limit: 10, Skip: 0)
+      </button>
+      <button
+        onclick="getReqWithParams('posts', 10, 0)"
+        onmouseover="hoverButton(this)"
+        onmouseout="unhoverButton(this)"
+      >
+        Get Posts (Limit: 10, Skip: 0)
+      </button>
 
-    <!-- Add new buttons for retrieving by ID -->
-    <button
-      onclick="getReqById('users', 1)"
-      onmouseover="hoverButton(this)"
-      onmouseout="unhoverButton(this)"
-    >
-      Get User by ID
-    </button>
-    <button
-      onclick="getReqById('posts', 1)"
-      onmouseover="hoverButton(this)"
-      onmouseout="unhoverButton(this)"
-    >
-      Get Post by ID
-    </button>
+      <!-- Add new buttons for retrieving by ID -->
+      <button
+        onclick="getReqById('users', 1)"
+        onmouseover="hoverButton(this)"
+        onmouseout="unhoverButton(this)"
+      >
+        Get User by ID
+      </button>
+      <button
+        onclick="getReqById('posts', 1)"
+        onmouseover="hoverButton(this)"
+        onmouseout="unhoverButton(this)"
+      >
+        Get Post by ID
+      </button>
+    </div>
+    <div>
+      <div class="customUrl">
+        <!-- Input field for custom URL -->
+        <input type="text" id="customUrl" placeholder="Enter custom URL" />
+        <!-- Button to submit custom URL -->
+        <button onclick="getCustomReq()" id="customUrlButton">Submit</button>
+      </div>
+
+      <!-- Add a textarea for displaying results -->
+      <textarea id="resultTextArea" readonly></textarea>
+    </div>
+
     <script>
+      function getCustomReq() {
+        const customUrl = document.getElementById("customUrl").value;
+        if (customUrl) {
+          // Clear the textarea before making a new request
+          clearTextArea();
+          let start, end;
+
+          start = Date.now();
+          fetch(customUrl)
+            .then(async (response) => {
+              end = Date.now();
+              const data = await response.json();
+              const source = response.headers.get("X-Response-Source");
+
+              appendToTextArea(`Custom Request`);
+              appendToTextArea(`Endpoint: ${customUrl}`);
+              appendToTextArea(`Response source: ${source}`);
+              appendToTextArea(`Time taken: ${end - start} ms`);
+              appendToTextArea(`Data: ${JSON.stringify(data, null, 2)}`); // 2 spaces of indentation
+            })
+            .catch((error) => {
+              console.error(`Custom Request failed:`, error);
+            });
+        } else {
+          alert("Please enter a custom URL");
+        }
+      }
+
       function hoverButton(button) {
         button.style.backgroundColor = "#45a049";
       }
@@ -107,7 +196,19 @@
         button.style.backgroundColor = "#4caf50";
       }
 
+      // Function to append text to the textarea
+      function appendToTextArea(text) {
+        const textarea = document.getElementById("resultTextArea");
+        textarea.value += text + "\n";
+      }
+
+      function clearTextArea() {
+        const textarea = document.getElementById("resultTextArea");
+        textarea.value = "";
+      }
+
       async function getReq(endpoint, num) {
+        clearTextArea();
         const promises = new Array(num).fill(0).map((_, i) => {
           let start, end;
 
@@ -118,11 +219,11 @@
               const data = await response.json();
               const source = response.headers.get("X-Response-Source");
 
-              console.log(`Request ${i + 1}`);
-              console.log(`Endpoint: ${endpoint}`);
-              console.log(`Response source: ${source}`);
-              console.log(`Time taken: ${end - start} ms`);
-              console.log(`Data:`, data);
+              appendToTextArea(`Request ${i + 1}`);
+              appendToTextArea(`Endpoint: ${endpoint}`);
+              appendToTextArea(`Response source: ${source}`);
+              appendToTextArea(`Time taken: ${end - start} ms`);
+              appendToTextArea(`Data: ${JSON.stringify(data, null, 2)}`); // 2 spaces of indentation
             })
             .catch((error) => {
               console.error(`Request ${i + 1} failed:`, error);
@@ -133,6 +234,7 @@
       }
 
       async function getReqWithParams(endpoint, limit, skip) {
+        clearTextArea();
         let start, end;
 
         start = Date.now();
@@ -142,11 +244,11 @@
             const data = await response.json();
             const source = response.headers.get("X-Response-Source");
 
-            console.log(`Request with parameters`);
-            console.log(`Endpoint: ${endpoint}`);
-            console.log(`Response source: ${source}`);
-            console.log(`Time taken: ${end - start} ms`);
-            console.log(`Data:`, data);
+            appendToTextArea(`Request with parameters`);
+            appendToTextArea(`Endpoint: ${endpoint}`);
+            appendToTextArea(`Response source: ${source}`);
+            appendToTextArea(`Time taken: ${end - start} ms`);
+            appendToTextArea(`Data: ${JSON.stringify(data, null, 2)}`); // 2 spaces of indentation
           })
           .catch((error) => {
             console.error(`Request with parameters failed:`, error);
@@ -154,6 +256,7 @@
       }
 
       async function getReqById(endpoint, id) {
+        clearTextArea();
         let start, end;
 
         start = Date.now();
@@ -163,11 +266,11 @@
             const data = await response.json();
             const source = response.headers.get("X-Response-Source");
 
-            console.log(`Request by ID`);
-            console.log(`Endpoint: ${endpoint}`);
-            console.log(`Response source: ${source}`);
-            console.log(`Time taken: ${end - start} ms`);
-            console.log(`Data:`, data);
+            appendToTextArea(`Request by ID`);
+            appendToTextArea(`Endpoint: ${endpoint}`);
+            appendToTextArea(`Response source: ${source}`);
+            appendToTextArea(`Time taken: ${end - start} ms`);
+            appendToTextArea(`Data: ${JSON.stringify(data, null, 2)}`); // 2 spaces of indentation
           })
           .catch((error) => {
             console.error(`Request by ID failed:`, error);
