@@ -2,7 +2,6 @@
 const express = require("express");
 const router = express.Router();
 const { User } = require("../db");
-const checkCache = require("../middleware/checkCache");
 const client = require("../redisClient");
 
 router.get("/", async (req, res) => {
